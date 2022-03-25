@@ -11,6 +11,15 @@ class FeedViewController: UIViewController {
     // Создаем объект Post
     var post = Post(title: "Мой пост")
     
+    private lazy var buttonStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 10
+        return stackView
+    }()
+    
     // Создаем кнопку для перехода на на экран поста
     private lazy var button: UIButton = {
         let button = UIButton()
@@ -39,11 +48,26 @@ class FeedViewController: UIViewController {
         return button
     }()
     
+    // Создаем кнопку для перехода на на экран поста
+    private lazy var statusButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Перейти на пост", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
+        button.backgroundColor = .systemIndigo
+        button.layer.cornerRadius = 12
+        button.clipsToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Цвет экрана
-        view.backgroundColor = .white
+        view.backgroundColor = .lightGray
         
         // Название загаловка
         title = "Лента"
@@ -54,8 +78,26 @@ class FeedViewController: UIViewController {
         // Переименовываем обратный переход
         navigationItem.backButtonTitle = ""
         
-        // Метод с заданными констрейтами кнопки
-        setConstraints()
+        setButtonStack()
+    }
+    
+    
+    func setButtonStack() {
+        view.addSubview(buttonStackView)
+        buttonStackView.addArrangedSubview(button)
+        buttonStackView.addArrangedSubview(statusButton)
+        
+        let buttonStackCenter = buttonStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        let buttonStackLeading = buttonStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16)
+        let buttonStackTrailing = buttonStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        
+        let button = button.heightAnchor.constraint(equalToConstant: 50)
+        let statusButton = statusButton.heightAnchor.constraint(equalToConstant: 50)
+        NSLayoutConstraint.activate([buttonStackCenter,
+                                    buttonStackLeading,
+                                     buttonStackTrailing,
+                                     button, statusButton].compactMap({$0}))
+        
     }
     
     // Делаем переход на экран с постом
@@ -66,14 +108,4 @@ class FeedViewController: UIViewController {
         self.navigationController?.pushViewController(postViewController, animated: true)
     }
     
-    // Метод добавления констрейтов
-    private func setConstraints() {
-        view.addSubview(button)
-        NSLayoutConstraint.activate([
-            button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -100),
-            button.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            button.heightAnchor.constraint(equalToConstant: 50)
-        ])
-    }
 }
