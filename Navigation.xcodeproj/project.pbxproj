@@ -28,6 +28,7 @@
 		FAAAFCFD27F0C32100AACE21 /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAAFCFC27F0C32100AACE21 /* PhotosViewController.swift */; };
 		FAAAFCFF27F0C39600AACE21 /* PhotosTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAAFCFE27F0C39600AACE21 /* PhotosTableViewCell.swift */; };
 		FAAAFD0127F0C3D600AACE21 /* PhotosCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAAFD0027F0C3D600AACE21 /* PhotosCollectionViewCell.swift */; };
+		FAB5823027F43BE200F6AEDE /* AvatarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB5822F27F43BE200F6AEDE /* AvatarViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		FAAAFCFC27F0C32100AACE21 /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
 		FAAAFCFE27F0C39600AACE21 /* PhotosTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosTableViewCell.swift; sourceTree = "<group>"; };
 		FAAAFD0027F0C3D600AACE21 /* PhotosCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionViewCell.swift; sourceTree = "<group>"; };
+		FAB5822F27F43BE200F6AEDE /* AvatarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +79,7 @@
 				FAAAFCFC27F0C32100AACE21 /* PhotosViewController.swift */,
 				FAAAFCFE27F0C39600AACE21 /* PhotosTableViewCell.swift */,
 				FAAAFD0027F0C3D600AACE21 /* PhotosCollectionViewCell.swift */,
+				FAB5822F27F43BE200F6AEDE /* AvatarViewController.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -241,6 +244,7 @@
 				FAA4E06227EE186400927622 /* InfoViewController.swift in Sources */,
 				FAA4E06827EE189A00927622 /* TabBarController.swift in Sources */,
 				FAA4E04B27EE14B400927622 /* SceneDelegate.swift in Sources */,
+				FAB5823027F43BE200F6AEDE /* AvatarViewController.swift in Sources */,
 				FAAAFCFB27F0C2D200AACE21 /* RandomPhoto.swift in Sources */,
 				FAAAFCF927F0C2A200AACE21 /* Photo.swift in Sources */,
 				FA73C5A127EE25510074AEE7 /* PostNews.swift in Sources */,

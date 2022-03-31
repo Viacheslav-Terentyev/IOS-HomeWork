@@ -7,18 +7,16 @@
 
 import UIKit
 
-protocol ProfileHeaderViewProtocol: AnyObject {
-    func buttonAction(inputTextIsVisible: Bool, completion: @escaping () -> Void)
-}
-
 final class ProfileViewController: UIViewController {
     
+    // Массив с новостями
     private var dataSource: [News.Article] = []
-
+    
     private lazy var jsonDecoder: JSONDecoder = {
         return JSONDecoder()
     }()
     
+    // Создаем TableView
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .systemGray6
@@ -26,17 +24,16 @@ final class ProfileViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DefaultCell")
-
         tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: "PhotoCell")
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostCell")
-        tableView.register(ProfileTableHederView.self, forHeaderFooterViewReuseIdentifier: "TableHeder")
+        tableView.register(ProfileTableHeaderView.self, forHeaderFooterViewReuseIdentifier: "TableHeder")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 44
         return tableView
     }()
     
     private var isExpanded: Bool = true
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
@@ -46,9 +43,7 @@ final class ProfileViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         self.fetchArticles { [weak self] articles in
             self?.dataSource = articles
-            DispatchQueue.main.async {
-                self?.tableView.reloadData()
-            }
+            self?.tableView.reloadData()
         }
     }
     
@@ -57,6 +52,7 @@ final class ProfileViewController: UIViewController {
         self.tabBarController?.tabBar.isHidden = true
         self.navigationController?.navigationBar.isHidden = true
     }
+
     
     private func setupTableView() {
         self.view.addSubview(self.tableView)
@@ -71,6 +67,7 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
+    // Получаем новости
     private func fetchArticles(completion: @escaping ([News.Article]) -> Void) {
         if let path = Bundle.main.path(forResource: "news", ofType: "json") {
             do {
@@ -95,14 +92,14 @@ final class ProfileViewController: UIViewController {
 extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableHeder") as! ProfileTableHederView
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableHeder") as! ProfileTableHeaderView
         view.delegate = self
         return view
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 0 {
-            return isExpanded ? 236 : 266
+            return isExpanded ? 220 : 250
         } else {
             return 0
         }
@@ -116,7 +113,6 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
         if section == 0 {
             return 1
         } else {
-            
             return self.dataSource.count
         }
     }
@@ -137,35 +133,47 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
                 return cell
             }
             let article = self.dataSource[indexPath.row]
-            let viewModel = PostTableViewCell.ViewModel(
-                author: article.author,
-                description: article.description,
-                image: article.image,
-                likes: article.likes,
-                views: article.views)
+            let viewModel = PostTableViewCell.ViewModel(author: article.author, description: article.description, image: article.image, likes: article.likes, views: article.views)
             cell.setup(with: viewModel)
             return cell
         }
     }
 }
 
-extension ProfileViewController: ProfileHeaderViewProtocol {
+extension ProfileViewController: ProfileTableHeaderViewProtocol {
+    
     func buttonAction(inputTextIsVisible: Bool, completion: @escaping () -> Void) {
         self.tableView.beginUpdates()
         self.isExpanded = !inputTextIsVisible
         self.tableView.endUpdates()
-        UIView.animate(withDuration: 0.2, delay: 0.0) {
+        UIView.animate(withDuration: 0.2, delay: 0) {
             self.view.layoutIfNeeded()
         } completion: { _ in
             completion()
         }
     }
+    
+    func delegateAction(cell: ProfileTableHeaderView) {
+        let animatedAvatarViewController = AvatarViewController()
+        self.view.addSubview(animatedAvatarViewController.view)
+        self.addChild(animatedAvatarViewController)
+        animatedAvatarViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            animatedAvatarViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            animatedAvatarViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            animatedAvatarViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            animatedAvatarViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        animatedAvatarViewController.didMove(toParent: self)
+    }
 }
 
+// Переход в PhotosViewController
 extension ProfileViewController: PhotosTableViewCellProtocol {
     func delegateButtonAction(cell: PhotosTableViewCell) {
         let photosViewController = PhotosViewController()
         self.navigationController?.pushViewController(photosViewController, animated: true)
     }
 }
-

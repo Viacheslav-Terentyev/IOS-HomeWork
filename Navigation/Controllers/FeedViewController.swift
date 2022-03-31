@@ -67,7 +67,7 @@ class FeedViewController: UIViewController {
         super.viewDidLoad()
         
         // Цвет экрана
-        view.backgroundColor = .lightGray
+        view.backgroundColor = .white
         
         // Название загаловка
         title = "Лента"

@@ -7,14 +7,19 @@
 
 import UIKit
 
-class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, UIGestureRecognizerDelegate {
+protocol ProfileTableHeaderViewProtocol: AnyObject {
+    func buttonAction(inputTextIsVisible: Bool, completion: @escaping () -> Void) 
     
+    func delegateAction(cell: ProfileTableHeaderView)
+}
 
-    var statusText: String? // переменная для хранения текста статуса
+class ProfileTableHeaderView: UITableViewHeaderFooterView {
+        
+    var statusText: String?
     
     // Создаем аватар
     private lazy var avatar: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "ДартВейдер"))
+        let imageView = UIImageView(image: UIImage(named: "ТасманскийДьявол"))
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.borderWidth = 3
@@ -27,7 +32,7 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
     // Создаем лэйбл с именем
     private lazy var nameLabel: UILabel = {
         let nameLabel = UILabel()
-        nameLabel.text  = "Darth Vader"
+        nameLabel.text  = "Вячеслав Терентьев"
         nameLabel.textColor = .black
         nameLabel.font = UIFont.boldSystemFont(ofSize: 18)
         return nameLabel
@@ -35,31 +40,32 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
     
     // Создаем лэйбл со статусом
     private lazy var statusLabel: UILabel = {
-        let statusLabel = UILabel()
-        statusLabel.textColor = .gray
-        statusLabel.font = UIFont.systemFont(ofSize: 14)
-        return statusLabel
+        let label = UILabel()
+        label.textColor = .gray
+        label.font = UIFont.systemFont(ofSize: 14)
+        return label
     }()
     
     // Создаем кнопку Show status
     private lazy var statusButton: UIButton = {
-        let statusButton = UIButton()
-        statusButton.setTitle("Show status", for: .normal)
-        statusButton.setTitleColor(.white, for: .normal)
-        statusButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        statusButton.translatesAutoresizingMaskIntoConstraints = false
-        statusButton.backgroundColor = .blue
-        statusButton.layer.cornerRadius = 4
-        statusButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
-        statusButton.layer.shadowOffset = CGSize(width: 4, height: 4)
-        statusButton.layer.shadowRadius = 4
-        statusButton.layer.shadowColor = UIColor.black.cgColor
-        statusButton.layer.shadowOpacity = 0.7
-        statusButton.layer.shouldRasterize = true
-        return statusButton
+        let button = UIButton()
+        button.setTitle("Show status", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = .blue
+        button.layer.cornerRadius = 4
+        button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        button.layer.shadowOffset = CGSize(width: 4, height: 4)
+        button.layer.shadowRadius = 4
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.7
+        button.layer.shouldRasterize = true
+        button.layer.shadowPath =  UIBezierPath(rect: button.bounds).cgPath
+        return button
     }()
     
-    private lazy var labelStackView: UIStackView = { 
+    private lazy var labelStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
@@ -71,7 +77,7 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
     private lazy var avatarStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal 
+        stackView.axis = .horizontal
         stackView.spacing = 16
         return stackView
     }()
@@ -87,19 +93,22 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
         textField.layer.borderWidth = 1
         textField.layer.borderColor = UIColor.black.cgColor
         textField.layer.cornerRadius = 12
+        textField.placeholder = "Введите статус"
         let leftView = UIView(frame: CGRect(x: 0, y: 0, width: 20, height: 2))
+        textField.leftView = leftView
         textField.leftViewMode = .always
         textField.clipsToBounds = true
-        textField.placeholder = "Введите статус"
+        textField.delegate = self
         return textField
     }()
     
     
     private var buttonTopConstrain: NSLayoutConstraint?
     
-    weak var delegate: ProfileHeaderViewProtocol? 
+    weak var delegate: ProfileTableHeaderViewProtocol?
     
-
+    private var tapGestureRecognizer = UITapGestureRecognizer()
+    
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
         createSubviews()
@@ -108,7 +117,7 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     func createSubviews() {
         self.addSubview(avatarStackView)
         self.addSubview(textField)
@@ -117,15 +126,15 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
         self.avatarStackView.addArrangedSubview(labelStackView)
         self.labelStackView.addArrangedSubview(nameLabel)
         self.labelStackView.addArrangedSubview(statusLabel)
-        self.textField.delegate = self
         setupConstraints()
+        setupTapGesture()
     }
     
     func setupConstraints() {
-        let avatarStackViewTopConstraint = self.avatarStackView.topAnchor.constraint(equalTo: self.topAnchor, constant: 16)
+        let avatarStackViewTopConstraint = self.avatarStackView.topAnchor.constraint(equalTo: self.topAnchor)
         let avatarStackViewLeadingConstraint = self.avatarStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
         let avatarStackViewTrailingConstraint = self.avatarStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16)
-        let avatarImageViewRatioConstraint = self.avatar.heightAnchor.constraint(equalTo: self.avatar.widthAnchor, multiplier: 1.0)
+        let avatarImageViewRatioConstraint = self.avatar.heightAnchor.constraint(equalTo: self.avatar.widthAnchor, multiplier: 1)
         self.buttonTopConstrain = self.statusButton.topAnchor.constraint(equalTo: self.avatarStackView.bottomAnchor, constant: 16)
         self.buttonTopConstrain?.priority = UILayoutPriority(rawValue: 999)
         let buttonLeadingConstraint = self.statusButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
@@ -139,11 +148,6 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
             self.buttonTopConstrain, buttonLeadingConstraint, buttonTrailingConstraint,
             buttonHeightConstraint, buttonBottomConstraint
         ].compactMap( {$0} ))
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        self.endEditing(true)
-        return false
     }
     
     @objc func buttonAction() {
@@ -177,5 +181,27 @@ class ProfileTableHederView: UITableViewHeaderFooterView, UITextFieldDelegate, U
     @objc func statusTextChanged(_ textField: UITextField) {
         let status: String = textField.text ?? ""
         print("Новый статус = \(status)")
+    }
+}
+
+extension ProfileTableHeaderView: UITextFieldDelegate {
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.endEditing(true)
+        return false
+    }
+}
+
+extension ProfileTableHeaderView: UIGestureRecognizerDelegate { 
+    
+    private func setupTapGesture() {
+        self.tapGestureRecognizer.addTarget(self, action: #selector(self.handleTapGesture(_:)))
+        self.avatarStackView.addGestureRecognizer(self.tapGestureRecognizer)
+        self.avatarStackView.isUserInteractionEnabled = true
+    }
+    
+    @objc func handleTapGesture(_ gestureRecognizer: UITapGestureRecognizer) {
+        guard self.tapGestureRecognizer === gestureRecognizer else { return }
+        delegate?.delegateAction(cell: self)
     }
 }
