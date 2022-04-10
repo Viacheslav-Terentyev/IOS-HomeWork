@@ -8,8 +8,8 @@
 import UIKit
 
 class PhotosViewController: UIViewController {
-    
-    private enum Constant { // количество ячеек в коллекшин вью
+
+    private enum Constant {
         static let itemCount: CGFloat = 3
     }
     
@@ -21,7 +21,7 @@ class PhotosViewController: UIViewController {
         return layout
     }()
     
-    private lazy var photoCollectionView: UICollectionView = {  // Создаем  фото
+    private lazy var photoCollectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.dataSource = self
@@ -56,7 +56,7 @@ class PhotosViewController: UIViewController {
     }
     
     private func itemSize(for width: CGFloat, with spacing: CGFloat) -> CGSize {
-        let needWidth = width - 4 * spacing
+        let needWidth = width - 5 * spacing
         let itemWidth = floor(needWidth / Constant.itemCount)
         return CGSize(width: itemWidth, height: itemWidth)
     }
@@ -76,12 +76,9 @@ extension PhotosViewController: UICollectionViewDelegate, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollection", for: indexPath) as! PhotosCollectionViewCell
         
-        DispatchQueue.main.async {
             let photos = photosImage[indexPath.row]
             let viewModel = PhotosCollectionViewCell.ViewModel(image: photos.image)
             cell.setup(with: viewModel)
-        }
-        
         return cell
     }
     
@@ -92,5 +89,27 @@ extension PhotosViewController: UICollectionViewDelegate, UICollectionViewDataSo
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         return UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let animatedPhotoViewController = AnimatedPhotoViewController()
+        
+        let photos = photosImage[indexPath.row]
+        let viewModel = AnimatedPhotoViewController.ViewModel(image: photos.image)
+        animatedPhotoViewController.setup(with: viewModel)
+        
+        self.view.addSubview(animatedPhotoViewController.view)
+        self.addChild(animatedPhotoViewController)
+        animatedPhotoViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            animatedPhotoViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            animatedPhotoViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            animatedPhotoViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            animatedPhotoViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        self.navigationController?.navigationBar.isHidden = true
+        animatedPhotoViewController.didMove(toParent: self)
     }
 }

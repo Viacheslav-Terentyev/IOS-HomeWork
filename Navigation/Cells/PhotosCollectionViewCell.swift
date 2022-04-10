@@ -44,19 +44,18 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     }
     
     private func setupConstraints() {
-        let topConstraint = self.photoView.topAnchor.constraint(equalTo: self.topAnchor)
-        let leadingConstraint = self.photoView.leadingAnchor.constraint(equalTo: self.leadingAnchor)
-        let trailingConstraint = self.photoView.trailingAnchor.constraint(equalTo: self.trailingAnchor)
-        let bottomConstraint = self.photoView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
-       
+        
         NSLayoutConstraint.activate([
-            topConstraint, leadingConstraint, bottomConstraint, trailingConstraint
-            ])
+            self.photoView.topAnchor.constraint(equalTo: self.topAnchor),
+            self.photoView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            self.photoView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            self.photoView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+        ])
     }
 }
 
-extension PhotosCollectionViewCell: Setupable { 
-    
+extension PhotosCollectionViewCell: Setupable {
+
     func setup(with viewModel: ViewModelProtocol) {
         guard let viewModel = viewModel as? ViewModel else { return }
         self.photoView.image = UIImage(named: viewModel.image)

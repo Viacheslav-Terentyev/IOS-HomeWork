@@ -9,14 +9,6 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
     
-    // Массив с новостями
-    private var dataSource: [News.Article] = []
-    
-    private lazy var jsonDecoder: JSONDecoder = {
-        return JSONDecoder()
-    }()
-    
-    // Создаем TableView
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .systemGray6
@@ -32,60 +24,26 @@ final class ProfileViewController: UIViewController {
         return tableView
     }()
     
-    private var isExpanded: Bool = true
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
-        tapGesturt()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        self.fetchArticles { [weak self] articles in
-            self?.dataSource = articles
-            self?.tableView.reloadData()
-        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tabBarController?.tabBar.isHidden = true
+        self.tabBarController?.tabBar.isHidden = false
         self.navigationController?.navigationBar.isHidden = true
     }
 
-    
     private func setupTableView() {
         self.view.addSubview(self.tableView)
         
-        let topConstraint = self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor)
-        let leadingConstraint = self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor)
-        let trailingConstraint = self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
-        let bottomConstraint = self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
-        
         NSLayoutConstraint.activate([
-            topConstraint, leadingConstraint, trailingConstraint, bottomConstraint
+            self.tableView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.tableView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.tableView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
-    }
-    
-    // Получаем новости
-    private func fetchArticles(completion: @escaping ([News.Article]) -> Void) {
-        if let path = Bundle.main.path(forResource: "news", ofType: "json") {
-            do {
-                let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped)
-                let news = try self.jsonDecoder.decode(News.self, from: data)
-                print("json data: \(news)")
-                completion(news.articles)
-            } catch let error {
-                print("parse error: \(error.localizedDescription)")
-            }
-        } else {
-            fatalError("Invalid filename/path.")
-        }
-    }
-    
-    func tapGesturt() {
-        let tapGesture = UITapGestureRecognizer(target: self.view, action: #selector(view.endEditing))
-        self.view.addGestureRecognizer(tapGesture)
     }
 }
 
@@ -99,7 +57,7 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 0 {
-            return isExpanded ? 220 : 250
+            return 250
         } else {
             return 0
         }
@@ -113,7 +71,7 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
         if section == 0 {
             return 1
         } else {
-            return self.dataSource.count
+            return newsArticles.count
         }
     }
     
@@ -123,38 +81,56 @@ extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultCell", for: indexPath)
                 return cell
             }
+            cell.selectionStyle = .none
             cell.delegate = self
             cell.layer.shouldRasterize = true
             cell.layer.rasterizationScale = UIScreen.main.scale
+            
             return cell
         } else {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell", for: indexPath) as? PostTableViewCell else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultCell", for: indexPath)
                 return cell
             }
-            let article = self.dataSource[indexPath.row]
-            let viewModel = PostTableViewCell.ViewModel(author: article.author, description: article.description, image: article.image, likes: article.likes, views: article.views)
+            cell.selectionStyle = .none
+            cell.delegate = self
+            let article = newsArticles[indexPath.row]
+            let viewModel = PostTableViewCell.ViewModel(
+                author: article.author,
+                description: article.description,
+                image: article.image,
+                likes: article.likes,
+                views: article.views)
             cell.setup(with: viewModel)
             return cell
         }
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        if indexPath.section == 0 {
+            return .none
+        } else {
+            return .delete
+        }
+    }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        self.tableView.beginUpdates()
+        newsArticles.remove(at: indexPath.row)
+        self.tableView.deleteRows(at: [indexPath], with: .automatic)
+        self.tableView.endUpdates()
     }
 }
 
 extension ProfileViewController: ProfileTableHeaderViewProtocol {
     
-    func buttonAction(inputTextIsVisible: Bool, completion: @escaping () -> Void) {
+    func buttonAction() {
         self.tableView.beginUpdates()
-        self.isExpanded = !inputTextIsVisible
         self.tableView.endUpdates()
-        UIView.animate(withDuration: 0.2, delay: 0) {
-            self.view.layoutIfNeeded()
-        } completion: { _ in
-            completion()
-        }
     }
     
-    func delegateAction(cell: ProfileTableHeaderView) {
-        let animatedAvatarViewController = AvatarViewController()
+    func delegateActionAnimatedAvatar(cell: ProfileTableHeaderView) {
+        let animatedAvatarViewController = AnimatedAvatarViewController()
         self.view.addSubview(animatedAvatarViewController.view)
         self.addChild(animatedAvatarViewController)
         animatedAvatarViewController.view.translatesAutoresizingMaskIntoConstraints = false
@@ -165,15 +141,53 @@ extension ProfileViewController: ProfileTableHeaderViewProtocol {
             animatedAvatarViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
             animatedAvatarViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
         animatedAvatarViewController.didMove(toParent: self)
     }
 }
 
-// Переход в PhotosViewController
 extension ProfileViewController: PhotosTableViewCellProtocol {
     func delegateButtonAction(cell: PhotosTableViewCell) {
         let photosViewController = PhotosViewController()
         self.navigationController?.pushViewController(photosViewController, animated: true)
+    }
+}
+
+extension ProfileViewController: PostTableViewCellProtocol {
+
+    func tapPostImageViewGestureRecognizerDelegate(cell: PostTableViewCell) {
+        
+        let presentPostViewController = FullPostView()
+        guard let index = self.tableView.indexPath(for: cell)?.row else { return }
+        let indexPath = IndexPath(row: index, section: 1)
+        newsArticles[indexPath.row].views += 1
+        let article = newsArticles[indexPath.row]
+
+        let viewModel = FullPostView.ViewModel(
+            author: article.author,
+            description: article.description,
+            image: article.image,
+            likes: article.likes,
+            views: article.views)
+
+        presentPostViewController.setup(with: viewModel)
+        self.view.addSubview(presentPostViewController)
+
+        presentPostViewController.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            presentPostViewController.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            presentPostViewController.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            presentPostViewController.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            presentPostViewController.topAnchor.constraint(equalTo: view.topAnchor)
+        ])
+
+        self.tableView.reloadRows(at: [indexPath], with: .fade)
+    }
+
+    func tapLikeTitleGestureRecognizerDelegate(cell: PostTableViewCell) {
+        guard let index = self.tableView.indexPath(for: cell)?.row else { return }
+        let indexPath = IndexPath(row: index, section: 1)
+        newsArticles[index].likes += 1
+        self.tableView.reloadRows(at: [indexPath], with: .fade)
     }
 }

@@ -8,18 +8,17 @@
 import UIKit
 
 protocol ProfileTableHeaderViewProtocol: AnyObject {
-    func buttonAction(inputTextIsVisible: Bool, completion: @escaping () -> Void) 
-    
-    func delegateAction(cell: ProfileTableHeaderView)
+    func buttonAction()
+    func delegateActionAnimatedAvatar(cell: ProfileTableHeaderView)
 }
 
 class ProfileTableHeaderView: UITableViewHeaderFooterView {
-        
-    var statusText: String?
+
+    private var statusText: String?
     
     // Создаем аватар
     private lazy var avatar: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "ТасманскийДьявол"))
+        let imageView = UIImageView(image: UIImage(named: "Avatar"))
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.borderWidth = 3
@@ -83,9 +82,8 @@ class ProfileTableHeaderView: UITableViewHeaderFooterView {
     }()
     
     // Текстовое поле
-    private lazy var textField: UITextField = {
+    private lazy var statusTextField: UITextField = {
         let textField = UITextField()
-        textField.isHidden = true
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.backgroundColor = .white
         textField.textColor = .black
@@ -102,9 +100,6 @@ class ProfileTableHeaderView: UITableViewHeaderFooterView {
         return textField
     }()
     
-    
-    private var buttonTopConstrain: NSLayoutConstraint?
-    
     weak var delegate: ProfileTableHeaderViewProtocol?
     
     private var tapGestureRecognizer = UITapGestureRecognizer()
@@ -120,67 +115,47 @@ class ProfileTableHeaderView: UITableViewHeaderFooterView {
     
     func createSubviews() {
         self.addSubview(avatarStackView)
-        self.addSubview(textField)
-        self.addSubview(statusButton)
         self.avatarStackView.addArrangedSubview(avatar)
         self.avatarStackView.addArrangedSubview(labelStackView)
         self.labelStackView.addArrangedSubview(nameLabel)
         self.labelStackView.addArrangedSubview(statusLabel)
-        setupConstraints()
-        setupTapGesture()
+        self.addSubview(statusTextField)
+        self.addSubview(statusButton)
+        self.setupConstraints()
+        self.setupTapGesture()
     }
     
     func setupConstraints() {
-        let avatarStackViewTopConstraint = self.avatarStackView.topAnchor.constraint(equalTo: self.topAnchor)
-        let avatarStackViewLeadingConstraint = self.avatarStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
-        let avatarStackViewTrailingConstraint = self.avatarStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16)
-        let avatarImageViewRatioConstraint = self.avatar.heightAnchor.constraint(equalTo: self.avatar.widthAnchor, multiplier: 1)
-        self.buttonTopConstrain = self.statusButton.topAnchor.constraint(equalTo: self.avatarStackView.bottomAnchor, constant: 16)
-        self.buttonTopConstrain?.priority = UILayoutPriority(rawValue: 999)
-        let buttonLeadingConstraint = self.statusButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
-        let buttonTrailingConstraint = self.statusButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16)
-        let buttonHeightConstraint = self.statusButton.heightAnchor.constraint(equalToConstant: 50)
-        let buttonBottomConstraint = self.statusButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16)
-        
         NSLayoutConstraint.activate([
-            avatarStackViewTopConstraint, avatarStackViewLeadingConstraint,
-            avatarStackViewTrailingConstraint, avatarImageViewRatioConstraint,
-            self.buttonTopConstrain, buttonLeadingConstraint, buttonTrailingConstraint,
-            buttonHeightConstraint, buttonBottomConstraint
-        ].compactMap( {$0} ))
+            avatarStackView.topAnchor.constraint(equalTo: self.topAnchor),
+            avatarStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            avatarStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            
+            avatar.widthAnchor.constraint(equalToConstant: 138),
+            avatar.heightAnchor.constraint(equalToConstant: 138),
+            
+            statusTextField.topAnchor.constraint(equalTo: self.avatarStackView.bottomAnchor, constant: -10),
+            statusTextField.leadingAnchor.constraint(equalTo: self.labelStackView.leadingAnchor),
+            statusTextField.trailingAnchor.constraint(equalTo: self.labelStackView.trailingAnchor),
+            statusTextField.heightAnchor.constraint(equalToConstant: 40),
+            
+            statusButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            statusButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            statusButton.heightAnchor.constraint(equalToConstant: 50),
+            statusButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16),
+            statusButton.topAnchor.constraint(equalTo: self.statusTextField.bottomAnchor, constant: 16)
+        ])
     }
     
     @objc func buttonAction() {
-        let topConstrain = self.textField.topAnchor.constraint(equalTo: self.avatarStackView.bottomAnchor, constant: -10)
-        let leadingConstrain = self.textField.leadingAnchor.constraint(equalTo: self.labelStackView.leadingAnchor)
-        let trailingConstrain = self.textField.trailingAnchor.constraint(equalTo: self.avatarStackView.trailingAnchor)
-        let textHeight = self.textField.heightAnchor.constraint(equalToConstant: 40)
-        self.buttonTopConstrain = self.statusButton.topAnchor.constraint(equalTo: self.textField.bottomAnchor, constant: 16)
-        
-        if self.textField.isHidden {
-            self.addSubview(self.textField)
-            textField.text = nil
-            statusButton.setTitle("Set status", for: .normal)
-            self.buttonTopConstrain?.isActive = false
-            NSLayoutConstraint.activate([topConstrain, leadingConstrain, trailingConstrain, textHeight, buttonTopConstrain].compactMap( {$0} ))
-            textField.becomeFirstResponder()
-        } else {
-            statusText = textField.text! // Меняем текст
-            statusLabel.text = "\(statusText ?? "")"
-            statusButton.setTitle("Show status", for: .normal)
-            self.textField.removeFromSuperview()
-            NSLayoutConstraint.deactivate([
-                topConstrain, leadingConstrain, trailingConstrain, textHeight
-            ].compactMap( {$0} ))
+        guard statusTextField.text != "" else {
+            statusTextField.shake()
+            return
         }
-        self.delegate?.buttonAction(inputTextIsVisible: self.textField.isHidden) { [weak self] in
-            self?.textField.isHidden.toggle()
-        }
-    }
-    
-    @objc func statusTextChanged(_ textField: UITextField) {
-        let status: String = textField.text ?? ""
-        print("Новый статус = \(status)")
+        statusText = self.statusTextField.text!
+        statusLabel.text = "\(statusText ?? "")"
+        self.statusTextField.text = nil
+        self.endEditing(true)
     }
 }
 
@@ -192,16 +167,16 @@ extension ProfileTableHeaderView: UITextFieldDelegate {
     }
 }
 
-extension ProfileTableHeaderView: UIGestureRecognizerDelegate { 
+extension ProfileTableHeaderView: UIGestureRecognizerDelegate {
     
     private func setupTapGesture() {
         self.tapGestureRecognizer.addTarget(self, action: #selector(self.handleTapGesture(_:)))
-        self.avatarStackView.addGestureRecognizer(self.tapGestureRecognizer)
-        self.avatarStackView.isUserInteractionEnabled = true
+        self.avatar.addGestureRecognizer(self.tapGestureRecognizer)
+        self.avatar.isUserInteractionEnabled = true
     }
     
     @objc func handleTapGesture(_ gestureRecognizer: UITapGestureRecognizer) {
         guard self.tapGestureRecognizer === gestureRecognizer else { return }
-        delegate?.delegateAction(cell: self)
+        delegate?.delegateActionAnimatedAvatar(cell: self)
     }
 }

@@ -45,16 +45,15 @@ class PhotosTableViewCell: UITableViewCell {
         return label
     }()
     
-    // Кнопка перехода на вью с фото
     private lazy var transitionButton: UIButton = {
-           let button = UIButton()
-           let image = UIImage(named: "arrow")
-           button.setBackgroundImage(image, for: .normal)
-           button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
-           button.translatesAutoresizingMaskIntoConstraints = false
-           button.setContentCompressionResistancePriority(UILayoutPriority(250), for: .horizontal)
-           return button
-       }()
+        let button = UIButton()
+        let image = UIImage(systemName: "arrow.forward")
+        button.setBackgroundImage(image, for: .normal)
+        button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setContentCompressionResistancePriority(UILayoutPriority(250), for: .horizontal)
+        return button
+    }()
     
     private lazy var layout: UICollectionViewFlowLayout = {
         let layout = UICollectionViewFlowLayout()
@@ -93,29 +92,21 @@ class PhotosTableViewCell: UITableViewCell {
     }
     
     private func setupConstraints() {
-        let topConstraint = self.backView.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 16)
-        let leadingConstraint = self.backView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor)
-        let trailingConstraint = self.backView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor)
-        let bottomConstraint = self.backView.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -16)
-        
-        let stackViewTopConstraint = self.stackView.topAnchor.constraint(equalTo: self.backView.topAnchor, constant: 12)
-        let stackViewLeadingConstraint = self.stackView.leadingAnchor.constraint(equalTo: self.backView.leadingAnchor, constant: 12)
-        let stackViewTrailingConstraint = self.stackView.trailingAnchor.constraint(equalTo: self.backView.trailingAnchor, constant: -12)
-        
-        let transitionButtonHeight = self.transitionButton.heightAnchor.constraint(equalTo: self.stackView.heightAnchor, multiplier: 1)
-        
-        let photoCollectionViewTopConstraint = self.photoCollectionView.topAnchor.constraint(equalTo: self.stackView.bottomAnchor)
-        let photoCollectionViewLeadingConstraint = self.photoCollectionView.leadingAnchor.constraint(equalTo: self.backView.leadingAnchor, constant: 12)
-        let photoCollectionViewTrailingConstraint = self.photoCollectionView.trailingAnchor.constraint(equalTo: self.backView.trailingAnchor, constant: -12)
-        let photoCollectionViewConstraint = self.photoCollectionView.bottomAnchor.constraint(equalTo: self.backView.bottomAnchor, constant: -12)
-        let photoCollectionViewHeight = self.photoCollectionView.heightAnchor.constraint(equalTo: self.contentView.widthAnchor, multiplier: 0.25)
         
         NSLayoutConstraint.activate([
-            topConstraint, leadingConstraint, bottomConstraint, trailingConstraint,
-            stackViewTopConstraint, stackViewLeadingConstraint, stackViewTrailingConstraint,
-            photoCollectionViewTopConstraint, photoCollectionViewLeadingConstraint,
-            photoCollectionViewTrailingConstraint, photoCollectionViewConstraint,
-            photoCollectionViewHeight, transitionButtonHeight
+            self.backView.topAnchor.constraint(equalTo: self.contentView.topAnchor),
+            self.backView.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor),
+            self.backView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
+            self.backView.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
+            self.stackView.topAnchor.constraint(equalTo: self.backView.topAnchor, constant: 12),
+            self.stackView.leadingAnchor.constraint(equalTo: self.backView.leadingAnchor, constant: 12),
+            self.stackView.trailingAnchor.constraint(equalTo: self.backView.trailingAnchor, constant: -12),
+            self.transitionButton.heightAnchor.constraint(equalTo: self.stackView.heightAnchor, multiplier: 1),
+            self.photoCollectionView.topAnchor.constraint(equalTo: self.stackView.bottomAnchor),
+            self.photoCollectionView.leadingAnchor.constraint(equalTo: self.backView.leadingAnchor, constant: 12),
+            self.photoCollectionView.trailingAnchor.constraint(equalTo: self.backView.trailingAnchor, constant: -12),
+            self.photoCollectionView.bottomAnchor.constraint(equalTo: self.backView.bottomAnchor),
+            self.photoCollectionView.heightAnchor.constraint(equalTo: self.contentView.widthAnchor, multiplier: 0.25)
         ])
     }
     
